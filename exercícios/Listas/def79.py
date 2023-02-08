@@ -5,11 +5,11 @@ while True:
         print('Valor duplicado! Não vou adicionar...')
     else:
         valores.append(valor)
-    vai = ''
-    while vai != 'N' and vai != 'S':
-        vai = str(input('Quer continuar? [S/N] ')).strip().upper()
-    if vai == 'N':
+    r = ''
+    while r != 'N' and r != 'S':
+        r = str(input('Quer continuar? [S/N] ')).strip().upper()
+    if r == 'N':
         break
 valores.sort()
-print(15*'-=-')
+print(30 * '-=')
 print(f'Você digitou os valores {valores}')
