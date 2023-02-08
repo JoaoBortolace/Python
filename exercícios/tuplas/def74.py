@@ -1,7 +1,10 @@
 from random import randint as rand
 
-numAle = (rand(0, 9), rand(0, 9), rand(0, 9), rand(0, 9), rand(0, 9))
+numAle = (rand(1, 10), rand(1, 10), rand(1, 10), rand(1, 10), rand(1, 10))
 
-print(f'Os valores sorteados foram: {numAle[0]} {numAle[1]} {numAle[2]} {numAle[3]} {numAle[4]}')
-print(f'O maior valor sorteado foi {sorted(numAle)[-1]}')
-print(f'O menor valor sorteado foi {sorted(numAle)[0]} \n')
+print('Os valores sorteados foram: ', end='')
+for n in numAle:
+    print(n, end=' ')
+
+print(f'\nO maior valor sorteado foi {max(numAle)}')
+print(f'O menor valor sorteado foi {min(numAle)}')

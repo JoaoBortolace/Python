@@ -1,6 +1,12 @@
 # Tuplas são implementadas com ()
 # Elas são estruturas compostas que permitem aguardas vários itens em uma mesma estrutura
 # Porém as tuplas são imutavéis, uma vez iniciadas, seus valores não poderão ser mais alteradas durante a execução do programa
+# Apartir do python3.10 é possivel alterar uma tupla com o programa rodando
+# Por exemplo: pessoa = (int, str, str)
+# a = 'oi
+# b = 'tudo'
+# c = 10
+# pessoa = (c, a, b)
 lanche = ('Hamburger', 'Suco', 'Pizza', 'Pudim', 'Batata frita')
 print(len(lanche))
 #Três formas diferentes de acessar os valores da tupla em um laço for
