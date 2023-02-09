@@ -9,7 +9,7 @@ for i in range(0, 3):
 print('-=' * 30)
 for linha in matriz:
     for elemento in linha:
-        print(f'[ {elemento} ]', end='')
+        print(f'[{elemento:^5}]', end='')
     print()
 print('-=' * 30)
 print(f'A soma dos valores pares é {somaPar}')

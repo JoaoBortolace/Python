@@ -14,7 +14,8 @@ for n in range(0, numJogos):
         if numRandom not in jogo:
             jogo.append(numRandom)
     jogo.sort()
-    jogos.append(jogo)
+    jogos.append(jogo[:])
+    jogo.clear()
     print(f'Jogo {n+1}: {jogos[n]}')
     delay(0.75)
 print('-=' * 5, '< BOA SORTE! >', '-=' * 5)

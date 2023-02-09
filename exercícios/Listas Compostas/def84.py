@@ -2,7 +2,7 @@ pessoasCadrastradas = []
 maior = 0
 menor = 0
 while True:
-    pessoa = [str(input('Nome: ')).strip(), int(input('Peso(kg): '))]
+    pessoa = [str(input('Nome: ')).strip(), float(input('Peso(kg): ').replace(',', '.'))]
     if len(pessoasCadrastradas) == 0:
         maior = menor = pessoa[1]
     elif pessoa[1] > maior:

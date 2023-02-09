@@ -16,18 +16,21 @@ while True:
         break
 
 print('-=' * 30)
-print(f'N°. NOME {"MÉDIA":>15}')
-print('-' * 35)
+print(f'{"N°.":<4}{"NOME":<10}{"MÉDIA":>8}')
+print('-' * 26)
 
 for pos, aluno in enumerate(alunos):
-    print(f'{pos}{aluno[0]:>8}{aluno[2]:>15.1f}')
+    print(f'{pos:<4}{aluno[0]:<10}{aluno[2]:>8.1f}')
 
 while True:
-    resp = int(input('Mostrar notas de qual aluno? (999 interrompe) '))
+    resp = int(input('Mostrar notas de qual aluno? \033[1;36m(999 interrompe)\033[m '))
     if resp == 999:
         print('FINALIZANDO...')
         delay(0.65)
         print('<<< VOLTE SEMPRE >>>')
         break
-    print(f'Notas de {alunos[resp][0]} são {alunos[resp][1]}')
-    print('-' * 35)
+    if resp <= len(alunos) - 1:
+        print(f'Notas de {alunos[resp][0]} são {alunos[resp][1]}')
+        print('-' * 35)
+    else:
+        print('\033[1;31mOpção inválida! Tente novamente\033[m')
