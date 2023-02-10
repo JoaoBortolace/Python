@@ -6,15 +6,15 @@ from time import sleep
 def p_grau():
     print('ax + b = c')
     ain = input('a = ').replace(',', '.')
-    bin = input('b = ').replace(',', '.')
+    b_in = input('b = ').replace(',', '.')
     cin = input('c = ').replace(',', '.')
     try:
         a = float(ain)
-        b = float(bin)
+        b = float(b_in)
         c = float(cin)
         rp = round((c - b) / a, 3)
         print(f'x = {rp}')
-    except (TypeError, ValueError, KeyError) as e:
+    except (TypeError, ValueError, KeyError):
         print('\033[1;31mDados inseridos de forma incorreta\033[37m')
         pass  # types not compatible
 
@@ -22,11 +22,11 @@ def p_grau():
 def s_grau():
     print('ax² + bx + c = 0')
     ain = input('a = ').replace(',', '.')
-    bin = input('b = ').replace(',', '.')
+    b_in = input('b = ').replace(',', '.')
     cin = input('c = ').replace(',', '.')
     try:
         a = float(ain)
-        b = float(bin)
+        b = float(b_in)
         c = float(cin)
         delta = b ** 2 - (4 * a * c)
         if delta <= -1:
@@ -38,7 +38,7 @@ def s_grau():
             rs1 = round((-1 * b + rd) / (2 * a), 3)
             rs2 = round((-1 * b - rd) / (2 * a), 3)
             print(f'x¹ = {rs1}, x² = {rs2}')
-    except (TypeError, ValueError, KeyError) as e:
+    except (TypeError, ValueError, KeyError):
         print('\033[1;31mDados inseridos de forma incorreta\033[37m')
         pass  # types not compatible
 
@@ -136,19 +136,6 @@ def pol():
         print('\033[1;31mDados inseridos de forma incorreta\033[37m')
         pass  # types not compatible
 
-
-def matriz(n, m):
-    print(f'Montando a matriz {n}x{m}')
-    for i in range(m):
-
-
-def det(n):
-    if n > 2:
-        blablabla
-    else:
-
-
-
 def per():
     print('\n\033[37mQual equação deseja realizar:')
     print(' 1 - 1° Grau \n 2 - 2° Grau \n 3 - Logaritmica \n 4 - Seno \n 5 - Cosseno \n 6 - Forma retângular \n 7 - Forma Polar \n 8 - Sair')
@@ -170,9 +157,6 @@ def per():
         elif res == 7:
             pol()
         elif res == 8:
-            n = int(input("Matriz quadrada de ordem m: ").strip())
-            matriz(n, n)
-        elif res == 9:
             exit()
         else:
             print('\033[1;31mOperação inválida! Insira novamente\033[37m')
