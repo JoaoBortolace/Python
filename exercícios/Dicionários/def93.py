@@ -1,7 +1,7 @@
 carreira = {'nome': str(input('Nome do Jogador: ')), 'gols': []}
 numPartidas = int(input(f"Quantas partidas {carreira['nome']} jogou? "))
 for p in range(0, numPartidas):
-    carreira['gols'].append(int(input(f'Quantos gols na partida {p}? ')))
+    carreira['gols'].append(int(input(f'\tQuantos gols na partida {p}? ')))
 carreira['total'] = sum(carreira['gols'])
 print('-=' * 30)
 print(carreira)

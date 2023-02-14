@@ -21,7 +21,7 @@ print('-=' * 30)
 print(f"{'cod':<4}{'nome':<8}{'gols':>12}{'total':>15}")
 print('-' * 40)
 for j, c in enumerate(jogadores):
-    print(f"{j:<4}{c['nome']:<16}{c['gols']}{'':<8}{c['total']:>6}")
+    print(f"{j:>4}{c['nome']}{c['gols']}{'':<15}{c['total']:>6}")
 
 while True:
     print('-' * 40)

@@ -8,6 +8,7 @@ for j in range(1, 5):
 for k, v in jogadores.items():
     print(f'\tO {k} tirou {v}')
     delay(1)
+''' 
 # Ordenado o dicinário em ordem decrescente
 dicAux = {}  # Dicionário auxiliar
 # Os elementos do dicionário serão passados em ordem decrescente para dicionário auxiliar
@@ -24,9 +25,12 @@ while len(dicAux) < 4:  # O laço é repetido enquanto todos os valores não for
 
 jogadores = dicAux.copy()  # Passa os dados já ordenados do dicionário auxiliar para o principal
 del dicAux  # Apaga o auxiliar
-print('Raking dos jogadores')
-c = 1
-for k, v in jogadores.items():
-    print(f'\t{c}º lugar: {k} com {v}')
-    c += 1
+'''
+
+print('-=' * 30)
+print('  == Raking dos jogadores ==')
+# Forma simples fácil de ordenar
+raking = sorted(jogadores.items(), key=lambda item: item[1], reverse=True)
+for k, v in enumerate(raking):
+    print(f'\t{k+1}º lugar: {v[0]} com {v[1]}.')
     delay(1)
