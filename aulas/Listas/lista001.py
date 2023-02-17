@@ -1,6 +1,6 @@
 # Listas são estruturas compostas assim como as Tuplas
 # Elas permitem agurdar diferentes dados em uma mesma estrutura
-# Porém, as listas diferentemente das tuplas, permitem alterar seus dados durante a execução
+# Porém, as listas diferentemente das Tuplas, permitem alterar seus dados durante a execução
 num = [2, 3, 5, 7]  # Listas são implementas atráves de chaves []
 print(num)
 num.append(3)  # Esta é uma forma possível adicionar dados a lista, ele adicionará o dado no final da lista

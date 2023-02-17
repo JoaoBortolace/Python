@@ -1,6 +1,6 @@
 # Tuplas são implementadas com ()
 # Elas são estruturas compostas que permitem aguardas vários itens em uma mesma estrutura
-# Porém as tuplas são imutavéis, uma vez iniciadas, seus valores não poderão ser mais alteradas durante a execução do programa
+# Porém as Tuplas são imutavéis, uma vez iniciadas, seus valores não poderão ser mais alteradas durante a execução do programa
 # Apartir do python3.10 é possivel alterar uma tupla com o programa rodando
 # Por exemplo: pessoa = (int, str, str)
 # a = 'oi
