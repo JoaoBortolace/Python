@@ -1,10 +1,11 @@
 def escreva(mesg):
-    tam = len(mesg)
-    print('~' * (tam+4))
+    tam = len(mesg) + 4
+    print('~' * tam)
     print(f'  {mesg}')
-    print('~' * (tam + 4))
+    print('~' * tam)
 
 
+# Programa Principal
 escreva('Gustavo Guanabara')
 escreva('Curso de Python no Youtube')
 escreva('CeV')

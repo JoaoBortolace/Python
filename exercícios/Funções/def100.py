@@ -7,9 +7,9 @@ from time import sleep as delay
 def sorteia(lista):
     print('Sorteando 5 valores da lista: ', end='')
     for i in range(0, 5):
-        delay(0.5)
-        num_ram = random(0, 50)
-        print(num_ram, end=' ')
+        delay(0.3)
+        num_ram = random(1, 10)
+        print(num_ram, end=' ', flush=True)
         lista.append(num_ram)
     print('PRONTO!')
 

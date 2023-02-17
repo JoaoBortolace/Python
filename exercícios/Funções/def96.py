@@ -1,7 +1,8 @@
-def area(la, c):
-    print(f'A área de um terreno {la}x{c} é de {la*c}m².')
+def area(larg, comp):
+    print(f'A área de um terreno {larg}x{comp} é de {larg * comp}m².')
 
 
+# Programa Principal
 print(' Controle de Terrenos')
 print('-' * 22)
 lar = float(input('LARGURA (m): ').replace(',', '.'))
