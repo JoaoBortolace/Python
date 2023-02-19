@@ -1,5 +1,5 @@
 # Podemos passar estruturas complexas como parâmetros
-# Tuplas, Listas
+# 1 - 1 - Tuplas, 2 - 2 - Listas
 def dobra(lst):
     for v in range(0, len(lst)):
         lst[v] *= 2

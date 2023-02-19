@@ -1,4 +1,4 @@
-# Dicionários, são estruturas de dados compostas com Tuplas e listas
+# 4 - 4 - Dicionários, são estruturas de dados compostas com 1 - 1 - Tuplas e listas
 # dicionários são parecidos com listas, porém podem usar literais "palavras" como indentificadores
 # Em listas [ 0, 1, 2, 3, ...], em dicionários {dado1: , dado2: , dado3: ,...}
 # Para instanciar um dicionário, exitem duas formas:

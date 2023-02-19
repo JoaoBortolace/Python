@@ -28,7 +28,7 @@ filme3 = {
     'diretor': 'Wachowski'
 }
 
-# Podemos mistura as estruturas de dados, Tuplas, listas, dicionários
+# Podemos mistura as estruturas de dados, 1 - 1 - Tuplas, listas, dicionários
 locadora = [filme, filme2, filme3]  # Aqui uma lista onde cada posição é um dicionário
 print(locadora)
 print(locadora[0]['ano'])  # Para acessar os elementos

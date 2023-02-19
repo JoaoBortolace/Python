@@ -1,4 +1,4 @@
-# Listas compostas são listas em listas
+# 2 - 2 - Listas compostas são listas em listas
 # Onde cada posição de uma lista "pai" tem uma lista "filho"
 teste = list()
 teste.append('Gustavo')
