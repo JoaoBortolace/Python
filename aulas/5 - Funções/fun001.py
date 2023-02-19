@@ -1,4 +1,4 @@
-# 5 - Funções são estruturas desenvolvidas para substituir rotinas
+# 5 - 5 - Funções são estruturas desenvolvidas para substituir rotinas
 # Assim evitando ficar repetindo o código
 
 # Como, por exemplo, ao invés de ficar repetindo o codigo

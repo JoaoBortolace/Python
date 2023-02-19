@@ -1,9 +1,9 @@
-# 5 - Funções auxiliares external
+# 5 - 5 - Funções auxiliares external
 from random import randint as random
 from time import sleep as delay
 
 
-# 5 - Funções auxiliares próprias
+# 5 - 5 - Funções auxiliares próprias
 def sorteia(lista):
     print('Sorteando 5 valores da lista: ', end='')
     for i in range(0, 5):
