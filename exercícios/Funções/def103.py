@@ -7,6 +7,6 @@ def ficha(nome='', gols=0):
 print('-' * 30)
 name = str(input('Nome do Jogador: '))
 gol = str(input('Número de Gols: '))
-if gol == '':
+if gol == '' or not gol.isnumeric():
     gol = 0
 ficha(name, gol)

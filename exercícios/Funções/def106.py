@@ -21,7 +21,7 @@ def header(text, cor='\33[m'):
 
 # Programa Principal
 while True:
-    header('SISTEMA DE AJUDA PyHELP', '\033[43m')
+    header('SISTEMA DE AJUDA PyHELP', '\033[31;43m')
     delay(.3)
     resp = str(input('Função ou Biblioteca > ')).strip()
     delay(.3)
