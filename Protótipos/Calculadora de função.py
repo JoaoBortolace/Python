@@ -4,10 +4,10 @@ from time import sleep
 
 
 def p_grau():
-    print('ax + b = c')
+    print('ax + b = k')
     ain = input('a = ').replace(',', '.')
     b_in = input('b = ').replace(',', '.')
-    cin = input('c = ').replace(',', '.')
+    cin = input('k = ').replace(',', '.')
     try:
         a = float(ain)
         b = float(b_in)
@@ -20,10 +20,10 @@ def p_grau():
 
 
 def s_grau():
-    print('ax² + bx + c = 0')
+    print('ax² + bx + k = 0')
     ain = input('a = ').replace(',', '.')
     b_in = input('b = ').replace(',', '.')
-    cin = input('c = ').replace(',', '.')
+    cin = input('k = ').replace(',', '.')
     try:
         a = float(ain)
         b = float(b_in)
@@ -58,10 +58,10 @@ def logi():
 
 
 def seno():
-    print('a + bsenx = c')
+    print('a + bsenx = k')
     ain = input('a = ').replace(',', '.')
     bin = input('b = ').replace(',', '.')
-    cin = input('c = ').replace(',', '.')
+    cin = input('k = ').replace(',', '.')
     try:
         a = float(ain)
         b = float(bin)
@@ -83,10 +83,10 @@ def seno():
 
 
 def coss():
-    print('a + bcosx = c')
+    print('a + bcosx = k')
     ain = input('a = ').replace(',', '.')
     bin = input('b = ').replace(',', '.')
-    cin = input('c = ').replace(',', '.')
+    cin = input('k = ').replace(',', '.')
     try:
         a = float(ain)
         b = float(bin)

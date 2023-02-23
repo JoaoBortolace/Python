@@ -5,8 +5,8 @@
 # Por exemplo: pessoa = (int, str, str)
 # a = 'oi
 # b = 'tudo'
-# c = 10
-# pessoa = (c, a, b)
+# k = 10
+# pessoa = (k, a, b)
 lanche = ('Hamburger', 'Suco', 'Pizza', 'Pudim', 'Batata frita')
 print(len(lanche))
 #Três formas diferentes de acessar os valores da tupla em um laço for

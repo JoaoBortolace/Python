@@ -30,7 +30,7 @@ class Jogador:
         while nome == '':
             print('\033[1;31mDigite um nome válido!\033[m')
             nome = input('Digite novamente: ').strip()
-        self.__nome = nome
+        self._nome = nome
         if aposta:
             try:
                 self.__aposta = float(input('Qual a sua aposta? R$').replace(',', '.'))
@@ -41,7 +41,7 @@ class Jogador:
         self.__cartas = []
 
     def get_nome(self):
-        return self.__nome
+        return self._nome
 
     def get_valor(self):
         self.__calcula_valor()
@@ -73,7 +73,7 @@ class Computador(Jogador):
         super().__init__('Computador', False)
 
     def get_nome(self):
-        return f'\033[35m{self.__nome}\033[m'
+        return f'\033[35m{self._nome}\033[m'
 
 
 # Constante ou variáveis importantes
@@ -120,3 +120,10 @@ if num_jogadores == 1:
 for j in jogadores:
     if not j.receber_cartas(2):
         print('\033[1;31mNão há mais cartas no baralho...\033[m')
+
+
+for j in jogadores:
+    print(f'{j.get_nome()}:', end='')
+    for k in j.get_cartas():
+        print(f' {k[1]} de {k[0]}', end=',')
+    print(f' Total: {j.get_valor()}')
