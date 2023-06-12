@@ -1,0 +1,655 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity Transmissor is
+	port (
+		clk, reset: in std_logic;
+		Serial_Out: out std_logic := '1';
+		startIMG: in std_logic --Botão que quando precionado começa a transmissão
+	);
+end entity;
+
+architecture Transmissor_Arch of Transmissor is
+    component UART_TX is
+        generic (
+            wordSize: natural := 8; --data
+            freqIN: natural := 50000000;
+            bitRate: natural := 9600;
+            manchester: std_logic := '1' -- '1' enable manchester encode (IEEE standard)
+        );
+        port (
+            clk, reset: in std_logic; -- '0' enable Reset 
+            DadoIn: in std_Logic_vector(wordSize-1 downto 0); --Parity must be already calculeted and included
+            SerialOut: out std_logic;
+            SerialStart: in std_logic; -- '1' to start transmition
+            SerialEND: out std_logic -- '0' when uart is transmitting, '1' when waiting
+        );
+    end component;
+    component FazPalavra is
+        port (
+            clk, reset: in std_logic;
+          start: in std_logic;
+          Serial_end: in std_logic;
+          DadoIn: in std_logic_vector(7 downto 0); --SubPixxel, seq R-G-B
+          addrROM: out std_logic_vector(17 downto 0) := (others => '0');
+          DadoOut: out std_logic_vector(63 downto 0) := (others => '0'); -- 5 Pixeld de 12 bit e um cmd de 4 bits
+            Serial_start: out std_logic := '0'
+        );
+    end component;
+    component ROM IS
+		port (
+			address: in STD_LOGIC_VECTOR(17 DOWNTO 0);
+			clock: in STD_LOGIC := '1';
+			q: out STD_LOGIC_VECTOR(7 DOWNTO 0)
+		);
+	end component;
+	signal clk_d, start, Serial_end: std_logic := '0';
+	signal serialData: std_logic_vector(63 downto 0) := (others => '0');
+	signal DadoIn: std_logic_vector(7 downto 0) := (others => '0');
+	signal addrROM: std_logic_vector(17 downto 0) := (others => '0');
+begin
+	TX: UART_TX generic map(64, 50000000, 9600, '1') port map(clk, reset, serialData, Serial_Out, start, Serial_end);
+	FP: FazPalavra port map(clk, reset, startIMG, Serial_end, DadoIn, addrROM, serialData, start);              
+	IMG: ROM port map(addrROM, clk, DadoIN);
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity FazPalavra is
+	port (
+    	clk, reset: in std_logic;
+      start: in std_logic;
+      Serial_end: in std_logic;
+      DadoIn: in std_logic_vector(7 downto 0); --SubPixxel, seq R-G-B
+      addrROM: out std_logic_vector(17 downto 0) := (others => '0');
+      DadoOut: out std_logic_vector(63 downto 0) := (others => '0'); -- 5 Pixeld de 12 bit e um cmd de 4 bits
+		Serial_start: out std_logic := '0'
+	);
+end entity;
+
+architecture Faz_Arch of FazPalavra is
+	component bit8_bit4 is
+    	port (
+        	COR8: in std_logic_vector(7 downto 0);
+			cor4: out std_logic_vector(3 downto 0)
+		);
+  	end component;
+    
+   signal addr: unsigned(17 downto 0) := (others => '1');
+   signal subPixel, cmd, comand: std_logic_vector(3 downto 0) := (others => '0');
+   signal Pixel: std_logic_vector(11 downto 0) := (others => '0');
+   signal index: integer range 0 to 2 := 0;
+   signal npix: integer range 0 to 4 := 0;
+   signal Palavra: std_logic_vector(59 downto 0) := (others => '0');
+begin
+	COR: bit8_bit4 port map(DadoIn, subPixel);
+   process(clk, reset)
+	begin
+		if reset = '0' then
+        	addr <= (others => '1');
+         	index <= 0;
+			npix <= 0;
+		elsif rising_edge(clk) then
+			Serial_start <= '0';
+            
+            if start = '0' then
+                addr <= (others => '0');
+                npix <= 0;
+				index <= 0;
+			end if;
+            
+			if addr < 147456 and Serial_end = '1' then
+              addr <= addr + 1;
+
+              if index < 2 then
+                      index <= index + 1;
+              else
+                 index <= 0;
+
+                 if npix < 4 then
+                          npix <= npix + 1;
+                 else
+                    npix <= 0;
+                    DadoOut <= Palavra & cmd;
+                          Serial_start <= '1';
+                      end if;
+                  end if;                
+			elsif addr = 147456 and Serial_end = '1' then
+                  DadoOut <= Palavra & "0010";
+                  Serial_start <= '1';
+                  addr <= addr + 1;
+			end if;
+		end if;
+	end process;
+    
+   Palavra(59 downto 48) <= Pixel when (npix = 0);
+   Palavra(47 downto 36) <= Pixel when (npix = 1);
+   Palavra(35 downto 24) <= Pixel when (npix = 2);
+   Palavra(23 downto 12) <= Pixel when (npix = 3);
+   Palavra(11 downto 0)  <= Pixel when (npix = 4);
+    
+   cmd <= "0001" when (addr < 15) else "0000";
+    
+   Pixel(11 downto 8) <= subPixel when (index = 0); -- RED
+   Pixel(7 downto 4)  <= subPixel when (index = 1); -- GREEN
+   Pixel(3 downto 0)  <= subPixel when (index = 2); -- BLUE
+    
+	addrROM <= std_logic_vector(addr);
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity bit8_bit4 is
+	port (
+    	COR8: in std_logic_vector(7 downto 0);
+		cor4: out std_logic_vector(3 downto 0)
+	);
+end entity;
+
+architecture Conversor of bit8_bit4 is
+	signal CORi: std_logic_vector(15 downto 0) := (others => '0');
+begin
+	CORi <= std_logic_vector((unsigned(COR8)*15) + 135);
+	cor4 <= CORi(11 downto 8);
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity UART_TX is
+	generic (
+    	wordSize: natural := 8; --data
+        freqIN: natural := 50000000;
+        bitRate: natural := 9600;
+        manchester: std_logic := '1' -- '1' enable manchester encode (IEEE standard)
+    );
+    port (
+    	clk, reset: in std_logic; -- '0' enable Reset 
+        DadoIn: in std_Logic_vector(wordSize-1 downto 0); --Parity must be already calculeted and included
+        SerialOut: out std_logic;
+        SerialStart: in std_logic; -- '1' to start transmition
+        SerialEND: out std_logic -- '0' when uart is transmitting, '1' when waiting
+    );
+end entity;
+
+architecture UART_TX_Arch of UART_TX is
+  component DivisorDeClock is
+      generic(ratio: natural := 4);
+      port (
+          clock_in: in std_logic;
+          clock_out: out std_logic
+      );
+  end component;
+	type stat is (idle, transmitindo);
+    signal atual_s, proximo_s: stat := idle;
+    signal i: integer range 0 to wordSize+1 := 0;
+    signal clk_tx, transmitir, Serial_i: std_logic := '0';
+    signal reg: std_logic_vector(wordSize-1 downto 0) := (others => '0');
+begin
+	DC: DivisorDeClock generic map(freqIN/bitRate) port map(clk, clk_tx);
+	process(clk_tx, reset)
+    begin
+    	if reset = '0' then
+        	atual_s <= idle;
+            i <= 0;
+            reg <= (others => '0');
+        elsif rising_edge(clk_tx) then
+        	atual_s <= proximo_s;
+        	reg <= DadoIN;
+            if atual_s = transmitindo then
+            	if i < wordSize + 1 then
+                	i <= i+1;
+                end if;
+            else
+            	i <= 0;
+            end if;
+        end if;
+	end process;
+        
+    proximo_s <= idle when (transmitir = '0') else
+    			 transmitindo when (transmitir = '1' and atual_s = idle);
+    transmitir <= '1' when (SerialStart = '1' and atual_s = idle) else
+    			  '0' when (i = wordSize+1 and atual_s = transmitindo);              
+    SerialEND <= '0' when (atual_s = transmitindo or transmitir = '1') else '1';
+    Serial_i <= '0' when (atual_s = transmitindo and i = 0) else
+                 reg(i-1) when (atual_s = transmitindo and (i > 0 and i < wordSize+1)) else '1';            
+    SerialOut <= Serial_i xor (clk_tx and manchester);
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity DivisorDeClock is
+	generic(ratio: natural := 4);
+	port (
+		clock_in: in std_logic;
+		clock_out: out std_logic
+	);
+end DivisorDeClock;
+
+architecture Divisor_Arch of DivisorDeClock is
+	signal clock: std_logic := '0';
+begin
+   process(clock_in) is 
+		variable count: natural range 0 to (ratio/2) - 1 := 0;
+	begin 
+		if rising_edge(clock_in) then
+			if count < (ratio/2) - 1 then
+				count := count + 1;
+			else
+				clock <= not clock;
+				count := 0;
+		 	end if;
+		end if;
+	end process;
+	
+    clock_out <= clock;
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity Receptor is
+	port (
+		clk, reset: in std_logic;
+		HSYNC, VSYNC: out std_logic;
+		RED, GREEN, BLUE: out std_logic_vector(3 downto 0);
+		Serial_in: in std_logic
+	);
+end entity;
+
+architecture Receptor_Arch of Receptor is
+	component vga_256_192 is
+        port (
+            clk, reset: in std_logic;
+            HSYNC, VSYNC: out std_logic;
+            RED, GREEN, BLUE: out std_logic_vector(3 downto 0);
+            clk_wr, wrEN: in std_logic;
+            addrWR: std_logic_vector(15 downto 0);
+            Pixel_in: in std_logic_vector(11 downto 0)
+        );
+	end component;
+	component UART_RX IS
+        generic (
+            wordSize: natural := 64;
+            bitRate: natural := 9600;
+            freqIN: natural := 50000000
+        );
+        port (
+            clk, reset: in std_logic;
+            serial_i:  in std_logic;
+            clk_rx: out std_logic;
+            dado: out std_logic_vector(wordSize - 1 downto 0)
+        );
+	end component;	
+	component Conferidor is
+		port (
+			clk, reset: in std_logic;
+			clk_rx: in std_logic;
+			clk_wr: out std_logic;
+			data: in std_logic_vector(63 downto 0);
+			wrEN: out std_logic;
+			addrWR: out std_logic_vector(15 downto 0);
+			Pixel_o: out std_logic_vector(11 downto 0)
+		);
+	end component;
+	signal clk_wr, wrEN, clk_rx: std_logic;
+	signal Pixel_Recebido: std_logic_vector(11 downto 0);
+    signal addrWR: std_logic_vector(15 downto 0);
+	signal data: std_logic_vector(63 downto 0);
+begin
+	RX: UART_RX generic map(64, 9600, 50000000) port map(clk, reset, Serial_in, clk_rx, data);
+	VGA: vga_256_192 port map(clk, reset, HSYNC, VSYNC, RED, GREEN, BLUE, clk_wr, wrEN, addrWR, Pixel_Recebido);
+	CF: Conferidor port map(clk, reset, clk_rx, clk_wr, data, wrEN, addrWR, Pixel_Recebido);
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.ALL;
+use IEEE.numeric_std.ALL;
+
+entity UART_RX is
+	generic (
+		wordSize: natural := 64;
+		bitRate: natural := 9600;
+		freqIN: natural := 50000000
+	);
+	port (
+		clk, reset: in std_logic;
+      serial_i:  in std_logic;
+		clk_rx: out std_logic;
+		dado: out std_logic_vector(wordSize - 1 downto 0)
+	);
+end entity;
+
+architecture UART_RX_Arch of UART_RX is
+	component Divisor_Clock is
+		generic (divisor: integer := 4); -- Valor do divisor
+		port (
+			clk, reset: in std_logic;
+			clk_o:    out std_logic
+		);
+	end component;
+	component Rx is
+		generic (wordSize: natural := 4);
+		port(
+			clock, reset: in std_logic;
+			serial_i:     in std_logic;
+			up:    		  out std_logic;
+			dado_o:       out std_logic_vector(wordSize-1 downto 0)
+		);
+		end component;
+	component Manchester_Decoder is
+		port (
+			clock_in:  in std_logic; -- 16x O clock da transmissão
+			reset:	  in std_logic;
+			dado_in:   in std_logic;
+			clock_out: out std_logic;
+			dado_out:  out std_logic
+		);
+	end component;
+   signal clkd, clk_serial, dado_s: std_logic;
+begin	
+   CD: Divisor_Clock generic map((freqIN/32*bitRate)) port map(clk, reset, clkd); --16x~buadRate
+   MD: Manchester_Decoder port map(clkd, reset, not serial_i, clk_serial, dado_s); -- Normal para Manchester original, Invertido para Manchester IEEE
+   RC: Rx generic map(wordSize) port map(clk_serial, reset, dado_s, clk_rx, dado);
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.ALL;
+use IEEE.numeric_std.ALL;
+
+entity Rx is
+	generic (wordSize: natural := 4);
+	port(
+		clock, reset: in std_logic;
+      serial_i:     in std_logic;
+		up:    		  out std_logic;
+      dado_o:       out std_logic_vector(wordSize-1 downto 0)
+	);
+end Rx;
+
+architecture Rx_Arch of Rx is
+	type stat is (inicio, captura, update, final);
+	signal atual_s, proximo_s: stat := inicio;
+	signal cont: integer range 0 to wordSize := 0;
+   signal reg: std_logic_vector(wordSize-1 downto 0) := (others => '0'); -- 8 bits de dado + 5 bits paridade
+begin
+	process(clock, reset)
+   begin
+		if reset = '0' then
+			atual_s <= inicio;
+         cont <= 0;
+         reg <= (others => '0');
+		elsif clock = '1' and clock'EVENT then
+			atual_s <= proximo_s;
+  
+			if atual_s = inicio then
+            --reg <= (others => '0');
+				cont <= 0;
+         elsif atual_s = captura then
+				reg(wordSize-2 downto 0) <= reg(wordSize-1 downto 1);
+				reg(wordSize-1) <= serial_i;
+				cont <= cont + 1;
+         end if;
+		end if;
+	end process;
+   -- Lógica de próximo estado
+	proximo_s <=
+		inicio when (atual_s = inicio and serial_i = '1') or (atual_s = final) else
+		captura when (atual_s = inicio and serial_i = '0') or (atual_s = captura and cont < wordSize-1) else
+      update when (atual_s = captura and cont = wordSize-1) else
+		final when (atual_s = update);
+	-- Saídas	
+   up <= '1' when (atual_s = final) else '0';
+   dado_o <= reg;
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.ALL;
+use IEEE.numeric_std.ALL;
+
+entity Manchester_Decoder is
+	port (
+		clock_in:  in std_logic; -- 16x O clock da transmissão
+		reset:	  in std_logic;
+		dado_in:   in std_logic;
+		clock_out: out std_logic;
+		dado_out:  out std_logic
+	);
+end Manchester_Decoder;
+
+architecture Manchester_Arch of Manchester_Decoder is
+	signal clock_int, cont_en, comp_out: std_logic := '0';
+	signal polaridade_inv: std_logic := '1';
+begin	
+	process(clock_in, reset) is
+    	variable contador: integer range 0 to 12 := 12;
+	begin
+		if reset = '0' then
+			contador := 12;
+         polaridade_inv <= '1';
+         comp_out <= '0';
+		elsif clock_in = '1' and clock_in'EVENT then
+        	clock_int <= dado_in xor polaridade_inv;
+            
+			if cont_en = '1' then
+				contador := contador - 1;	
+				if contador = 8 then
+					comp_out <=  '1';
+				elsif contador = 1 then
+					polaridade_inv <= dado_in;
+				elsif contador = 0 then
+					contador := 12;
+					comp_out <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+	cont_en <= clock_int or comp_out;
+	clock_out <= clock_int;
+	dado_out <= polaridade_inv;
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity vga_256_192 is
+	port (
+		clk, reset: in std_logic;
+		HSYNC, VSYNC: out std_logic;
+		RED, GREEN, BLUE: out std_logic_vector(3 downto 0);
+		clk_wr, wrEN: in std_logic;
+        addrWR: std_logic_vector(15 downto 0);
+        Pixel_in: in std_logic_vector(11 downto 0)
+	);
+end entity;
+
+architecture vga_256_192_Arch of vga_256_192 is
+	component PLL is
+		port (
+			refclk   : in  std_logic := '0'; --  refclk.clk
+			rst      : in  std_logic := '0'; --   reset.reset
+			outclk_0 : out std_logic;        -- outclk0.clk
+			outclk_1 : out std_logic         -- outclk1.clk
+		);
+	end component;
+	component RAM IS
+		port (
+			data: IN STD_LOGIC_VECTOR (11 DOWNTO 0);
+			rdaddress: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+			rdclock: IN STD_LOGIC ;
+			wraddress: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+			wrclock: IN STD_LOGIC  := '1';
+			wren: IN STD_LOGIC  := '0';
+			q: OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
+		);
+	end component;
+	signal clk_vga, clk_rd: std_logic := '0';
+	signal H_cont: unsigned(8 downto 0) := (others => '0');
+	signal V_cont: unsigned(9 downto 0) := (others => '0');
+	signal PixelPos: std_logic_vector(15 downto 0) := (others => '0');
+	signal Pixel: std_logic_vector(11 downto 0) := (others => '1');
+begin
+	DC: PLL port map(clk, not reset, clk_vga, clk_rd);
+	VRAM: RAM port map(Pixel_in, PixelPos, not clk_rd, addrWR, not clk_WR, wrEN, Pixel);	
+	process(clk_vga, reset) 
+   begin
+		if reset = '0' then
+			H_cont <= (others => '0');
+			V_cont <= (others => '0');
+      elsif rising_edge(clk_vga) then
+         if H_cont = 336 then
+				H_cont <= (others => '0');
+            if V_cont = 806 then
+					V_cont <= (others => '0');
+				else
+					V_cont <= V_cont + 1;
+            	end if;
+			else
+				H_cont <= H_cont + 1;
+			end if;
+		end if;
+	end process;
+       
+   PixelPos <= std_logic_vector(V_cont(9 downto 2)) & std_logic_vector(H_cont(7 downto 0));
+	
+   VSYNC <= '0' when (V_cont > 770 and V_cont < 776) else '1';
+   HSYNC <= '0' when (H_cont > 261 and H_cont < 295) else '1';
+   RED   <= Pixel(11 downto 8) when (H_cont < 256 and V_cont < 768) else (others => '0');
+   GREEN <= Pixel(7 downto 4)  when (H_cont < 256 and V_cont < 768) else (others => '0');
+   BLUE  <= Pixel(3 downto 0)  when (H_cont < 256 and V_cont < 768) else (others => '0');
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity Conferidor is
+	port (
+		clk, reset: in std_logic;
+		clk_rx: in std_logic;
+		clk_wr: out std_logic;
+		data: in std_logic_vector(63 downto 0);
+		wrEN: out std_logic;
+		addrWR: out std_logic_vector(15 downto 0);
+		Pixel_o: out std_logic_vector(11 downto 0)
+	);
+end entity;
+
+architecture Conferidor_Arch of Conferidor is
+	component Divisor_Clock is
+		generic (divisor: integer := 4); -- Valor do divisor
+		port (
+			clk, reset: in std_logic;
+			clk_o:    out std_logic
+		);
+	end component;
+	type stat is (idle, envio);
+   signal estado: stat := idle;
+   signal captura, wr, Trava, clk_i, en: std_logic := '0';
+   signal cmd: std_logic_vector(3 downto 0) := (others => '0');
+   signal pixel: integer range 0 to 5 := 0;
+   signal addr: unsigned(15 downto 0) := (others => '0');
+begin
+	CD: Divisor_Clock generic map(25) port map(clk, reset, clk_i);
+
+	process(clk_i, reset)
+   begin
+		if reset = '0' then
+			estado <= idle;
+         pixel <= 0;
+         wr <= '0';
+         addr <= (others => '0');
+      elsif rising_edge(clk_i) then
+			case estado is
+				when idle =>
+					pixel <= 0;
+               wr <= '0';
+					if captura = '1' then
+						estado <= envio;
+               else
+                  estado <= idle;
+               end if;
+				when envio =>
+					
+               wr <= '1';   
+               if pixel < 5 then
+						pixel <= pixel + 1;
+                 		if en = '1' and pixel >= 1 then
+                        	if addr < 49152 then
+                            	addr <= addr + 1;
+                            else
+                            	addr <= (others => '0');
+                            end if;
+                       end if;
+						estado <= envio;
+					else
+						wr <= '0';
+                  estado <= idle;
+					end if;
+			end case;
+		end if;
+   end process;
+
+   wrEN <= en;
+   addrWR <= std_logic_vector(addr);
+   clk_wr <= clk_i when (wr = '1') else '0';   
+   Captura <= '1' when (Clk_rx = '1' and Trava = '0') else '0'; 
+   Trava <= '0' when (Clk_rx = '0') else
+    		   '1' when (Captura = '1' and estado = envio);
+    
+    en <= '1' when (estado = envio and cmd = x"1") else 
+    	  '0' when (estado = envio and cmd = x"2");
+  
+    with pixel select
+		Pixel_o <= data(63 downto 52) when 1,
+			        data(51 downto 40) when 2,    
+	              data(39 downto 28) when 3,
+                 data(27 downto 16) when 4,
+                 data(15 downto 4)  when 5,
+                    (others => '0') when others;
+	cmd <= data(3 downto 0);                
+end architecture;
+
+library IEEE;
+use IEEE.std_logic_1164.ALL;
+use IEEE.numeric_std.ALL;
+
+entity Divisor_Clock is
+	generic (divisor: integer := 4); -- Valor do divisor
+   port (
+		clk, reset: in std_logic;
+      clk_o:    out std_logic
+   );
+end Divisor_Clock;
+
+architecture Divisor_Arch of Divisor_Clock is
+	signal count: integer range 0 to divisor-1 := 0;
+   signal aux: std_logic := '0';
+begin
+   process(clk, reset)
+   begin
+		if reset = '0' then
+			count <= 0;
+         aux <= '0';
+      elsif clk = '1' and clk'EVENT then
+         if count = divisor-1 then
+				aux <= not aux;
+            count <= 0;
+			else
+				count <= count + 1;
+         end if;
+      end if;
+	end process;
+
+   clk_o <= aux;
+end architecture;
